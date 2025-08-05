@@ -1,0 +1,612 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Araç Takip</title>
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/css/bootstrap.min.css" rel="stylesheet">
+    <link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif;
+            background-color: #f5f5f5;
+            color: #333;
+        }
+
+        .header {
+            background: white;
+            padding: 1rem 2rem;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+
+        .header h1 {
+            font-size: 1.5rem;
+            font-weight: 600;
+        }
+
+        .menu-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+        }
+
+        .container {
+            max-width: 1200px;
+            margin: 2rem auto;
+            padding: 0 1rem;
+        }
+
+        .vehicle-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            gap: 1.5rem;
+            margin-top: 2rem;
+        }
+
+        .vehicle-card {
+            background: white;
+            border-radius: 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            overflow: hidden;
+            cursor: pointer;
+            transition: transform 0.2s, box-shadow 0.2s;
+        }
+
+        .vehicle-card:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 4px 16px rgba(0,0,0,0.15);
+        }
+
+        .vehicle-image {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            background-color: #f0f0f0;
+        }
+
+        .vehicle-card.no-image .vehicle-image {
+            display: none;
+        }
+
+        .vehicle-card.no-image .vehicle-info {
+            padding: 2rem 1.5rem;
+        }
+
+        .vehicle-info {
+            padding: 1.5rem;
+        }
+
+        .vehicle-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+        }
+
+        .vehicle-plate {
+            font-size: 1.1rem;
+            color: #666;
+            margin-bottom: 1rem;
+        }
+
+        .vehicle-details {
+            display: flex;
+            justify-content: space-between;
+            font-size: 0.9rem;
+            color: #777;
+        }
+
+        .modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.5);
+            z-index: 1000;
+        }
+
+        .modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #f8f9fa;
+            border-radius: 12px;
+            width: 98%;
+            max-width: 1400px;
+            height: 95vh;
+            max-height: none;
+            display: flex;
+            flex-direction: column;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .modal-header {
+            background: white;
+            padding: 1rem 2rem;
+            border-bottom: 1px solid #eee;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-shrink: 0;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+
+        .modal-header h2 {
+            font-size: 1.8rem;
+            font-weight: bold;
+            color: #333;
+        }
+
+        .close-btn {
+            background: none;
+            border: none;
+            font-size: 1.5rem;
+            cursor: pointer;
+            color: #666;
+        }
+
+        .modal-body {
+            padding: 2rem;
+            flex: 1;
+            overflow-y: auto;
+        }
+
+        /* Modal içindeki araç kartı stilleri - arac.html'den alındı */
+        .vehicle-card-modal {
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 4px 6px rgba(0,0,0,0.1);
+            padding: 2rem;
+            margin-bottom: 2rem;
+            border: none;
+        }
+        
+        .vehicle-image-container {
+            position: relative;
+            width: 100%;
+            height: 300px;
+            border-radius: 10px;
+            overflow: hidden;
+        }
+        
+        .vehicle-image-modal {
+            width: 100%;
+            height: 300px;
+            object-fit: cover;
+            border-radius: 10px;
+            background: linear-gradient(135deg, #e3e3e3, #f0f0f0);
+        }
+        
+        .vehicle-placeholder {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(135deg, #f8f9fa, #e9ecef);
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            border-radius: 10px;
+        }
+        
+        .info-section {
+            margin-top: 1.5rem;
+        }
+        
+        .info-item {
+            margin-bottom: 1rem;
+        }
+        
+        .info-label {
+            font-weight: 600;
+            color: #666;
+            font-size: 0.9rem;
+            margin-bottom: 0.2rem;
+        }
+        
+        .info-value {
+            font-size: 1.1rem;
+            color: #333;
+            font-weight: 500;
+        }
+        
+        .status-badge {
+            background: #28a745;
+            color: white;
+            padding: 0.3rem 0.8rem;
+            border-radius: 20px;
+            font-size: 0.85rem;
+            font-weight: 500;
+        }
+        
+        .map-container {
+            height: 400px;
+            background: #e9ecef;
+            border-radius: 10px;
+            position: relative;
+            overflow: hidden;
+        }
+        
+        .map-placeholder {
+            width: 100%;
+            height: 100%;
+            background: linear-gradient(45deg, #dee2e6, #e9ecef);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #6c757d;
+            font-size: 1.2rem;
+        }
+        
+        .location-marker {
+            position: absolute;
+            top: 60%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: #007bff;
+            color: white;
+            padding: 0.5rem 1rem;
+            border-radius: 20px;
+            font-size: 0.9rem;
+            font-weight: 500;
+            box-shadow: 0 2px 8px rgba(0,123,255,0.3);
+        }
+        
+        .location-marker::before {
+            content: '';
+            position: absolute;
+            bottom: -5px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 0;
+            height: 0;
+            border-left: 8px solid transparent;
+            border-right: 8px solid transparent;
+            border-top: 8px solid #007bff;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 2rem;
+            color: #666;
+        }
+
+        .error {
+            text-align: center;
+            padding: 2rem;
+            color: #dc3545;
+        }
+
+        .status-good { color: #28a745; }
+        .status-medium { color: #ffc107; }
+        .status-bad { color: #dc3545; }
+
+        @media (max-width: 1024px) {
+            .modal-content {
+                width: 100%;
+                height: 100vh;
+                max-height: none;
+                border-radius: 0;
+            }
+        }
+
+        @media (max-width: 768px) {
+            .container {
+                padding: 0 0.5rem;
+            }
+            
+            .vehicle-grid {
+                grid-template-columns: 1fr;
+            }
+            
+            .modal-content {
+                width: 100%;
+                height: 100vh;
+                border-radius: 0;
+                max-width: none;
+            }
+            
+            .modal-body {
+                padding: 1rem;
+            }
+            
+            .vehicle-card-modal {
+                padding: 1rem;
+            }
+            
+            .vehicle-image-container {
+                height: 200px;
+            }
+            
+            .vehicle-image-modal {
+                height: 200px;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="header">
+        <h1>Araç Takip</h1>
+        <button class="menu-btn">☰</button>
+    </div>
+
+    <div class="container">
+        <div id="loading" class="loading">Araçlar yükleniyor...</div>
+        <div id="error" class="error" style="display: none;"></div>
+        <div id="vehicleGrid" class="vehicle-grid"></div>
+    </div>
+
+    <!-- Modal -->
+    <div id="vehicleModal" class="modal">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h2 id="modalTitle">Araç Takip Sistemi</h2>
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+            </div>
+            <div class="modal-body" id="modalBody">
+                <!-- Modal içeriği JavaScript ile doldurulacak -->
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const API_BASE_URL = 'http://localhost:5094/api'; // API URL'inizi buraya yazın
+
+        let vehicles = [];
+
+        // Sayfa yüklendiğinde araçları getir
+        document.addEventListener('DOMContentLoaded', function() {
+            loadVehicles();
+        });
+
+        // Araçları API'den yükle
+        async function loadVehicles() {
+            try {
+                const response = await fetch(`${API_BASE_URL}/araclar`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                vehicles = await response.json();
+                displayVehicles(vehicles);
+                document.getElementById('loading').style.display = 'none';
+            } catch (error) {
+                console.error('Araçlar yüklenirken hata:', error);
+                document.getElementById('loading').style.display = 'none';
+                document.getElementById('error').style.display = 'block';
+                document.getElementById('error').textContent = 'Araçlar yüklenirken bir hata oluştu. Lütfen API bağlantınızı kontrol edin.';
+            }
+        }
+
+        // Araçları listele
+        function displayVehicles(vehicleList) {
+            const grid = document.getElementById('vehicleGrid');
+            grid.innerHTML = '';
+
+            vehicleList.forEach(vehicle => {
+                const card = createVehicleCard(vehicle);
+                grid.appendChild(card);
+            });
+        }
+
+        // Araç kartı oluştur
+        function createVehicleCard(vehicle) {
+            const card = document.createElement('div');
+            card.className = `vehicle-card ${!vehicle.aracResimUrl ? 'no-image' : ''}`;
+            card.onclick = () => showVehicleDetail(vehicle.id);
+
+            card.innerHTML = `
+                ${vehicle.aracResimUrl ? `
+                    <img src="${vehicle.aracResimUrl}" 
+                         alt="${vehicle.marka} ${vehicle.model}" 
+                         class="vehicle-image"
+                         loading="lazy">
+                ` : ''}
+                <div class="vehicle-info">
+                    <div class="vehicle-title">${vehicle.marka} ${vehicle.model}</div>
+                    <div class="vehicle-plate">${vehicle.plaka}</div>
+                    <div class="vehicle-details">
+                        <span>${vehicle.yil}</span>
+                        <span>${vehicle.guncelKm.toLocaleString()} km</span>
+                        <span>${vehicle.yakitTuketimi} lt/100km</span>
+                    </div>
+                </div>
+            `;
+
+            return card;
+        }
+
+        // Araç detayını göster
+        async function showVehicleDetail(vehicleId) {
+            try {
+                const response = await fetch(`${API_BASE_URL}/araclar/${vehicleId}`);
+                if (!response.ok) {
+                    throw new Error(`HTTP error! status: ${response.status}`);
+                }
+                const vehicle = await response.json();
+                displayVehicleDetail(vehicle);
+                document.getElementById('vehicleModal').style.display = 'block';
+            } catch (error) {
+                console.error('Araç detayı yüklenirken hata:', error);
+                alert('Araç detayı yüklenirken bir hata oluştu.');
+            }
+        }
+
+        // Araç detayını modal içinde göster - arac.html düzeni ile
+        function displayVehicleDetail(vehicle) {
+            const modalTitle = document.getElementById('modalTitle');
+            const modalBody = document.getElementById('modalBody');
+
+            modalTitle.textContent = 'Araç Takip Sistemi';
+
+            // Tarih formatlama fonksiyonu
+            function formatDate(dateString) {
+                const date = new Date(dateString);
+                return date.toLocaleDateString('tr-TR');
+            }
+
+            // Lastik durumu renk sınıfı
+            function getStatusClass(status) {
+                if (status === 'Mükemmel' || status === 'İyi') return 'status-good';
+                if (status === 'Orta') return 'status-medium';
+                return 'status-bad';
+            }
+
+            modalBody.innerHTML = `
+                <div class="row">
+                    <!-- Vehicle Information Card -->
+                    <div class="col-lg-8">
+                        <div class="vehicle-card-modal">
+                            <div class="row">
+                                <div class="col-md-6">
+                                    <div class="info-section">
+                                        <h4 class="mb-3">${vehicle.sirketAdi}</h4>
+                                        
+                                        <div class="info-item">
+                                            <div class="info-label">Araç Muayene</div>
+                                            <div class="info-value">${formatDate(vehicle.muayeneTarihi)}</div>
+                                        </div>
+                                        
+                                        <div class="info-item">
+                                            <div class="info-label">Kasko ve Trafik</div>
+                                            <div class="info-value">${formatDate(vehicle.kaskoTrafikTarihi)}</div>
+                                        </div>
+                                        
+                                        <div class="info-item">
+                                            <div class="info-label">Araç Bakım</div>
+                                            <div class="info-value">${formatDate(vehicle.sonBakimTarihi)}</div>
+                                        </div>
+                                        
+                                        <div class="info-item">
+                                            <div class="info-label">Araç Yakıt Kullanım</div>
+                                            <div class="info-value">${vehicle.yakitTuketimi} lt/100 km</div>
+                                        </div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="vehicle-image-container">
+                                        <img src="${vehicle.aracResimUrl || 'https://images.unsplash.com/photo-1619767886558-efdc259cde1a?w=400&h=300&fit=crop&crop=center'}" 
+                                             alt="${vehicle.marka} ${vehicle.model}" 
+                                             class="vehicle-image-modal" 
+                                             onerror="this.style.display='none'; this.nextElementSibling.style.display='flex';">
+                                        <div class="vehicle-placeholder" style="display: none;">
+                                            <i class="fas fa-car fa-3x text-muted"></i>
+                                            <p class="mt-2 text-muted">${vehicle.marka} ${vehicle.model}</p>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            
+                            <div class="row mt-4">
+                                <div class="col-md-6">
+                                    <div class="info-item">
+                                        <div class="info-label">Araç Güncel Km</div>
+                                        <div class="info-value">${vehicle.guncelKm.toLocaleString()} km</div>
+                                    </div>
+                                    
+                                    <div class="info-item">
+                                        <div class="info-label">Araç Lasik Durum</div>
+                                        <div class="info-value ${getStatusClass(vehicle.lastikDurumu)}">${vehicle.lastikDurumu}</div>
+                                    </div>
+                                </div>
+                                
+                                <div class="col-md-6">
+                                    <div class="info-item">
+                                        <div class="info-label">Araç Lastik Durumu</div>
+                                        <div class="info-value ${getStatusClass(vehicle.lastikDurumu)}">${vehicle.lastikDurumu}</div>
+                                    </div>
+                                    
+                                    <div class="info-item">
+                                        <div class="info-label">Ruhsat Bilgisi</div>
+                                        <div class="info-value">${vehicle.sirketAdi}</div>
+                                        <div class="info-value small text-muted">Kiralama: ${vehicle.sirketKiralama}</div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <!-- Right Sidebar -->
+                    <div class="col-lg-4">
+                        <!-- License Information -->
+                        <div class="vehicle-card-modal">
+                            <h5 class="mb-3">Ruhsat Bilgileri</h5>
+                            <div class="info-item">
+                                <div class="info-label">Plaka</div>
+                                <div class="info-value">${vehicle.plaka}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">VIN</div>
+                                <div class="info-value">${vehicle.vin}</div>
+                            </div>
+                            <div class="info-item">
+                                <div class="info-label">Model</div>
+                                <div class="info-value">${vehicle.yil} ${vehicle.marka} ${vehicle.model}</div>
+                            </div>
+                        </div>
+                        
+                        <!-- User Information -->
+                        <div class="vehicle-card-modal">
+                            <h5 class="mb-3">Araç Kullanıcı</h5>
+                            <div class="info-item">
+                                <div class="info-value">${vehicle.kullaniciAdi}</div>
+                                <div class="info-value text-primary">${vehicle.kullaniciTelefon}</div>
+                            </div>
+                        </div>
+                        
+                        <!-- Location Information -->
+                        <div class="vehicle-card-modal">
+                            <h5 class="mb-3">Araç Konum</h5>
+                            <div class="info-value">${vehicle.konum}</div>
+                            
+                            <div class="map-container mt-3">
+                                <div class="map-placeholder">
+                                    <i class="fas fa-map-marker-alt fa-2x"></i>
+                                </div>
+                                <div class="location-marker">
+                                    ${vehicle.konum.split(',')[0]}
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            `;
+        }
+
+        // Modal'ı kapat
+        function closeModal() {
+            document.getElementById('vehicleModal').style.display = 'none';
+        }
+
+        // Modal dışına tıklandığında kapat
+        window.onclick = function(event) {
+            const modal = document.getElementById('vehicleModal');
+            if (event.target === modal) {
+                closeModal();
+            }
+        }
+
+        // ESC tuşu ile modal'ı kapat
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                closeModal();
+            }
+        });
+    </script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/bootstrap/5.3.0/js/bootstrap.bundle.min.js"></script>
+</body>
+</html>
