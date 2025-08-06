@@ -8,6 +8,7 @@ var builder = WebApplication.CreateBuilder(args);
 builder.Services.AddDbContext<AracTakipDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
+builder.Services.AddControllers(); // Controller desteği ekle
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen(c =>
 {
@@ -17,7 +18,7 @@ builder.Services.AddSwaggerGen(c =>
 // CORS - Zorunlu
 builder.Services.AddCors(options =>
 {
-    options.AddDefaultPolicy(policy =>
+    options.AddPolicy("AllowAll", policy =>
     {
         policy.AllowAnyOrigin()
               .AllowAnyMethod()
@@ -27,8 +28,8 @@ builder.Services.AddCors(options =>
 
 var app = builder.Build();
 
-// CORS'u en başta ekle
-app.UseCors();
+// CORS'u en başta ekle - Sıralama önemli!
+app.UseCors("AllowAll");
 
 // Configure the HTTP request pipeline
 if (app.Environment.IsDevelopment())
@@ -37,41 +38,7 @@ if (app.Environment.IsDevelopment())
     app.UseSwaggerUI();
 }
 
-// API Endpoints
-app.MapGet("/api/araclar", async (AracTakipDbContext db) =>
-{
-    try
-    {
-        var araclar = await db.Araclar.ToListAsync();
-        return Results.Ok(araclar);
-    }
-    catch (Exception ex)
-    {
-        return Results.Problem($"Veritabanı hatası: {ex.Message}");
-    }
-})
-.WithName("GetAraclar")
-.WithOpenApi()
-.WithTags("Araclar");
-
-app.MapGet("/api/araclar/{id:int}", async (int id, AracTakipDbContext db) =>
-{
-    try
-    {
-        var arac = await db.Araclar.FindAsync(id);
-        
-        if (arac == null)
-            return Results.NotFound($"ID {id} ile araç bulunamadı.");
-            
-        return Results.Ok(arac);
-    }
-    catch (Exception ex)
-    {
-        return Results.Problem($"Veritabanı hatası: {ex.Message}");
-    }
-})
-.WithName("GetAracById")
-.WithOpenApi()
-.WithTags("Araclar");
+// Controller routing ekle
+app.MapControllers();
 
 app.Run();

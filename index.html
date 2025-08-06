@@ -223,6 +223,15 @@
             color: #333;
             font-weight: 500;
         }
+
+        .info-value.clickable {
+            cursor: pointer;
+            color: #007bff;
+        }
+
+        .info-value.clickable:hover {
+            text-decoration: underline;
+        }
         
         .status-badge {
             background: #28a745;
@@ -277,6 +286,104 @@
             border-left: 8px solid transparent;
             border-right: 8px solid transparent;
             border-top: 8px solid #007bff;
+        }
+
+        /* Edit Modal Styles */
+        .edit-modal {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0,0,0,0.7);
+            z-index: 1100;
+        }
+
+        .edit-modal-content {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            background: white;
+            border-radius: 12px;
+            width: 90%;
+            max-width: 500px;
+            padding: 2rem;
+            box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+        }
+
+        .edit-modal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 1.5rem;
+            border-bottom: 1px solid #eee;
+            padding-bottom: 1rem;
+        }
+
+        .edit-modal-header h3 {
+            margin: 0;
+            color: #333;
+        }
+
+        .form-group {
+            margin-bottom: 1rem;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 0.5rem;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input {
+            width: 100%;
+            padding: 0.75rem;
+            border: 1px solid #ddd;
+            border-radius: 6px;
+            font-size: 1rem;
+        }
+
+        .form-group input:focus {
+            outline: none;
+            border-color: #007bff;
+            box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
+        }
+
+        .btn-group {
+            display: flex;
+            gap: 1rem;
+            margin-top: 1.5rem;
+        }
+
+        .btn {
+            padding: 0.75rem 1.5rem;
+            border: none;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 1rem;
+            font-weight: 500;
+            transition: background-color 0.2s;
+        }
+
+        .btn-primary {
+            background: #007bff;
+            color: white;
+        }
+
+        .btn-primary:hover {
+            background: #0056b3;
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+            color: white;
+        }
+
+        .btn-secondary:hover {
+            background: #545b62;
         }
 
         .loading {
@@ -335,6 +442,11 @@
             .vehicle-image-modal {
                 height: 200px;
             }
+
+            .edit-modal-content {
+                width: 95%;
+                padding: 1.5rem;
+            }
         }
     </style>
 </head>
@@ -350,7 +462,7 @@
         <div id="vehicleGrid" class="vehicle-grid"></div>
     </div>
 
-    <!-- Modal -->
+    <!-- Ana Modal -->
     <div id="vehicleModal" class="modal">
         <div class="modal-content">
             <div class="modal-header">
@@ -363,14 +475,52 @@
         </div>
     </div>
 
+    <!-- Düzenleme Modal -->
+    <div id="editModal" class="edit-modal">
+        <div class="edit-modal-content">
+            <div class="edit-modal-header">
+                <h3>Ruhsat Bilgilerini Düzenle</h3>
+                <button class="close-btn" onclick="closeEditModal()">&times;</button>
+            </div>
+            <form id="editForm">
+                <div class="form-group">
+                    <label for="editPlaka">Plaka</label>
+                    <input type="text" id="editPlaka" name="plaka" required>
+                </div>
+                <div class="form-group">
+                    <label for="editVIN">VIN</label>
+                    <input type="text" id="editVIN" name="vin" required>
+                </div>
+                <div class="form-group">
+                    <label for="editMarka">Marka</label>
+                    <input type="text" id="editMarka" name="marka" required>
+                </div>
+                <div class="form-group">
+                    <label for="editModel">Model</label>
+                    <input type="text" id="editModel" name="model" required>
+                </div>
+                <div class="form-group">
+                    <label for="editYil">Yıl</label>
+                    <input type="number" id="editYil" name="yil" min="1900" max="2030" required>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">İptal</button>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
     <script>
         const API_BASE_URL = 'http://localhost:5094/api'; // API URL'inizi buraya yazın
 
         let vehicles = [];
+        let currentEditingVehicle = null;
 
         // Sayfa yüklendiğinde araçları getir
         document.addEventListener('DOMContentLoaded', function() {
             loadVehicles();
+            setupEditForm();
         });
 
         // Araçları API'den yükle
@@ -437,6 +587,7 @@
                     throw new Error(`HTTP error! status: ${response.status}`);
                 }
                 const vehicle = await response.json();
+                currentEditingVehicle = vehicle;
                 displayVehicleDetail(vehicle);
                 document.getElementById('vehicleModal').style.display = 'block';
             } catch (error) {
@@ -544,10 +695,13 @@
                     <div class="col-lg-4">
                         <!-- License Information -->
                         <div class="vehicle-card-modal">
-                            <h5 class="mb-3">Ruhsat Bilgileri</h5>
+                            <h5 class="mb-3">Ruhsat Bilgileri 
+                                <i class="fas fa-edit text-primary ms-2" style="cursor: pointer; font-size: 0.9rem;" 
+                                   onclick="openEditModal()" title="Düzenle"></i>
+                            </h5>
                             <div class="info-item">
                                 <div class="info-label">Plaka</div>
-                                <div class="info-value">${vehicle.plaka}</div>
+                                <div class="info-value clickable" onclick="openEditModal()">${vehicle.plaka}</div>
                             </div>
                             <div class="info-item">
                                 <div class="info-label">VIN</div>
@@ -587,23 +741,98 @@
             `;
         }
 
+        // Düzenleme modal'ını aç
+        function openEditModal() {
+            if (!currentEditingVehicle) return;
+            
+            document.getElementById('editPlaka').value = currentEditingVehicle.plaka;
+            document.getElementById('editVIN').value = currentEditingVehicle.vin;
+            document.getElementById('editMarka').value = currentEditingVehicle.marka;
+            document.getElementById('editModel').value = currentEditingVehicle.model;
+            document.getElementById('editYil').value = currentEditingVehicle.yil;
+            
+            document.getElementById('editModal').style.display = 'block';
+        }
+
+        // Düzenleme modal'ını kapat
+        function closeEditModal() {
+            document.getElementById('editModal').style.display = 'none';
+        }
+
+        // Form gönderme işleyicisi
+        function setupEditForm() {
+            document.getElementById('editForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                if (!currentEditingVehicle) return;
+
+                const formData = {
+                    plaka: document.getElementById('editPlaka').value,
+                    vin: document.getElementById('editVIN').value,
+                    marka: document.getElementById('editMarka').value,
+                    model: document.getElementById('editModel').value,
+                    yil: parseInt(document.getElementById('editYil').value)
+                };
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/araclar/${currentEditingVehicle.id}/ruhsat`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    const updatedVehicle = await response.json();
+                    
+                    // Başarı mesajı
+                    alert('Ruhsat bilgileri başarıyla güncellendi!');
+                    
+                    // Modal'ları kapat
+                    closeEditModal();
+                    closeModal();
+                    
+                    // Araç listesini yenile
+                    await loadVehicles();
+                    
+                } catch (error) {
+                    console.error('Güncelleme hatası:', error);
+                    alert('Ruhsat bilgileri güncellenirken bir hata oluştu.');
+                }
+            });
+        }
+
         // Modal'ı kapat
         function closeModal() {
             document.getElementById('vehicleModal').style.display = 'none';
+            currentEditingVehicle = null;
         }
 
         // Modal dışına tıklandığında kapat
         window.onclick = function(event) {
             const modal = document.getElementById('vehicleModal');
+            const editModal = document.getElementById('editModal');
+            
             if (event.target === modal) {
                 closeModal();
             }
+            if (event.target === editModal) {
+                closeEditModal();
+            }
         }
 
-        // ESC tuşu ile modal'ı kapat
+        // ESC tuşu ile modal'ları kapat
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
-                closeModal();
+                if (document.getElementById('editModal').style.display === 'block') {
+                    closeEditModal();
+                } else if (document.getElementById('vehicleModal').style.display === 'block') {
+                    closeModal();
+                }
             }
         });
     </script>
