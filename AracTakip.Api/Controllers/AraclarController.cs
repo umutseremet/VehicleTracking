@@ -104,7 +104,7 @@ namespace AracTakip.Api.Controllers
             }
         }
 
-        // PATCH: api/araclar/5/ruhsat - Sadece ruhsat bilgilerini güncelle
+        // PATCH: api/araclar/5/ruhsat - Ruhsat bilgilerini güncelle
         [HttpPatch("{id}/ruhsat")]
         public async Task<IActionResult> UpdateRuhsatBilgileri(int id, [FromBody] RuhsatUpdateDto ruhsatDto)
         {
@@ -132,6 +132,61 @@ namespace AracTakip.Api.Controllers
                 return StatusCode(500, "İç sunucu hatası");
             }
         }
+
+        // PATCH: api/araclar/5/kullanici - Kullanıcı bilgilerini güncelle
+        [HttpPatch("{id}/kullanici")]
+        public async Task<IActionResult> UpdateKullaniciBilgileri(int id, [FromBody] KullaniciUpdateDto kullaniciDto)
+        {
+            try
+            {
+                var arac = await _context.Araclar.FindAsync(id);
+                if (arac == null)
+                {
+                    return NotFound($"ID {id} ile araç bulunamadı.");
+                }
+
+                // Sadece kullanıcı bilgilerini güncelle
+                arac.KullaniciAdi = kullaniciDto.KullaniciAdi;
+                arac.KullaniciTelefon = kullaniciDto.KullaniciTelefon;
+
+                await _context.SaveChangesAsync();
+                return Ok(arac);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Araç {Id} kullanıcı bilgileri güncellenirken hata oluştu", id);
+                return StatusCode(500, "İç sunucu hatası");
+            }
+        }
+
+        // PATCH: api/araclar/5/arac-bilgileri - Araç bilgilerini güncelle
+        [HttpPatch("{id}/arac-bilgileri")]
+        public async Task<IActionResult> UpdateAracBilgileri(int id, [FromBody] AracBilgileriUpdateDto aracDto)
+        {
+            try
+            {
+                var arac = await _context.Araclar.FindAsync(id);
+                if (arac == null)
+                {
+                    return NotFound($"ID {id} ile araç bulunamadı.");
+                }
+
+                // Araç bilgilerini güncelle (Kasko ve Yakıt hariç)
+                arac.MuayeneTarihi = aracDto.MuayeneTarihi;
+                arac.SonBakimTarihi = aracDto.SonBakimTarihi;
+                arac.GuncelKm = aracDto.GuncelKm;
+                arac.LastikDurumu = aracDto.LastikDurumu;
+                arac.KaskoTrafikTarihi = aracDto.KaskoTarihi;
+
+                await _context.SaveChangesAsync();
+                return Ok(arac);
+            }
+            catch (Exception ex)
+            {
+                _logger.LogError(ex, "Araç {Id} araç bilgileri güncellenirken hata oluştu", id);
+                return StatusCode(500, "İç sunucu hatası");
+            }
+        }
     }
 
     // Ruhsat güncelleme için DTO
@@ -142,5 +197,22 @@ namespace AracTakip.Api.Controllers
         public string Marka { get; set; } = string.Empty;
         public string Model { get; set; } = string.Empty;
         public int Yil { get; set; }
+    }
+
+    // Kullanıcı güncelleme için DTO
+    public class KullaniciUpdateDto
+    {
+        public string KullaniciAdi { get; set; } = string.Empty;
+        public string KullaniciTelefon { get; set; } = string.Empty;
+    }
+
+    // Araç bilgileri güncelleme için DTO
+    public class AracBilgileriUpdateDto
+    {
+        public DateTime MuayeneTarihi { get; set; }
+        public DateTime KaskoTarihi { get; set; }
+        public DateTime SonBakimTarihi { get; set; }
+        public int GuncelKm { get; set; }
+        public string LastikDurumu { get; set; } = string.Empty;
     }
 }

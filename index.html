@@ -163,7 +163,7 @@
             overflow-y: auto;
         }
 
-        /* Modal içindeki araç kartı stilleri - arac.html'den alındı */
+        /* Modal içindeki araç kartı stilleri */
         .vehicle-card-modal {
             background: white;
             border-radius: 15px;
@@ -308,9 +308,11 @@
             background: white;
             border-radius: 12px;
             width: 90%;
-            max-width: 500px;
+            max-width: 600px;
             padding: 2rem;
             box-shadow: 0 20px 60px rgba(0,0,0,0.3);
+            max-height: 80vh;
+            overflow-y: auto;
         }
 
         .edit-modal-header {
@@ -338,7 +340,8 @@
             color: #555;
         }
 
-        .form-group input {
+        .form-group input,
+        .form-group select {
             width: 100%;
             padding: 0.75rem;
             border: 1px solid #ddd;
@@ -346,7 +349,12 @@
             font-size: 1rem;
         }
 
-        .form-group input:focus {
+        .form-group select {
+            background-color: white;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus {
             outline: none;
             border-color: #007bff;
             box-shadow: 0 0 0 2px rgba(0,123,255,0.25);
@@ -402,6 +410,12 @@
         .status-medium { color: #ffc107; }
         .status-bad { color: #dc3545; }
 
+        .form-row {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 1rem;
+        }
+
         @media (max-width: 1024px) {
             .modal-content {
                 width: 100%;
@@ -447,6 +461,10 @@
                 width: 95%;
                 padding: 1.5rem;
             }
+
+            .form-row {
+                grid-template-columns: 1fr;
+            }
         }
     </style>
 </head>
@@ -475,14 +493,14 @@
         </div>
     </div>
 
-    <!-- Düzenleme Modal -->
-    <div id="editModal" class="edit-modal">
+    <!-- Ruhsat Bilgileri Düzenleme Modal -->
+    <div id="editRuhsatModal" class="edit-modal">
         <div class="edit-modal-content">
             <div class="edit-modal-header">
                 <h3>Ruhsat Bilgilerini Düzenle</h3>
-                <button class="close-btn" onclick="closeEditModal()">&times;</button>
+                <button class="close-btn" onclick="closeEditRuhsatModal()">&times;</button>
             </div>
-            <form id="editForm">
+            <form id="editRuhsatForm">
                 <div class="form-group">
                     <label for="editPlaka">Plaka</label>
                     <input type="text" id="editPlaka" name="plaka" required>
@@ -504,7 +522,80 @@
                     <input type="number" id="editYil" name="yil" min="1900" max="2030" required>
                 </div>
                 <div class="btn-group">
-                    <button type="button" class="btn btn-secondary" onclick="closeEditModal()">İptal</button>
+                    <button type="button" class="btn btn-secondary" onclick="closeEditRuhsatModal()">İptal</button>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Kullanıcı Bilgileri Düzenleme Modal -->
+    <div id="editKullaniciModal" class="edit-modal">
+        <div class="edit-modal-content">
+            <div class="edit-modal-header">
+                <h3>Kullanıcı Bilgilerini Düzenle</h3>
+                <button class="close-btn" onclick="closeEditKullaniciModal()">&times;</button>
+            </div>
+            <form id="editKullaniciForm">
+                <div class="form-group">
+                    <label for="editKullaniciAdi">Kullanıcı Adı</label>
+                    <input type="text" id="editKullaniciAdi" name="kullaniciAdi" required>
+                </div>
+                <div class="form-group">
+                    <label for="editKullaniciTelefon">Telefon</label>
+                    <input type="tel" id="editKullaniciTelefon" name="kullaniciTelefon" required>
+                </div>
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditKullaniciModal()">İptal</button>
+                    <button type="submit" class="btn btn-primary">Kaydet</button>
+                </div>
+            </form>
+        </div>
+    </div>
+
+    <!-- Araç Bilgileri Düzenleme Modal -->
+    <div id="editAracBilgileriModal" class="edit-modal">
+        <div class="edit-modal-content">
+            <div class="edit-modal-header">
+                <h3>Araç Bilgilerini Düzenle</h3>
+                <button class="close-btn" onclick="closeEditAracBilgileriModal()">&times;</button>
+            </div>
+            <form id="editAracBilgileriForm">
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editMuayeneTarihi">Araç Muayene Tarihi</label>
+                        <input type="date" id="editMuayeneTarihi" name="muayeneTarihi" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editKaskoveTrafikTarihi">Kasko ve Trafik Tarihi</label>
+                        <input type="date" id="editKaskoveTrafikTarihi" name="kaskoveTrafikTarihi" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editBakimTarihi">Araç Bakım Tarihi</label>
+                        <input type="date" id="editBakimTarihi" name="bakimTarihi" required>
+                    </div>
+                </div>
+                
+                <div class="form-row">
+                    <div class="form-group">
+                        <label for="editGuncelKm">Araç Güncel Km</label>
+                        <input type="number" id="editGuncelKm" name="guncelKm" min="0" required>
+                    </div>
+                    <div class="form-group">
+                        <label for="editLastikDurumu">Araç Lastik Durumu</label>
+                        <select id="editLastikDurumu" name="lastikDurumu" required>
+                            <option value="">Seçiniz</option>
+                            <option value="Mükemmel">Mükemmel</option>
+                            <option value="İyi">İyi</option>
+                            <option value="Orta">Orta</option>
+                            <option value="Kötü">Kötü</option>
+                            <option value="Değişmeli">Değişmeli</option>
+                        </select>
+                    </div>
+                </div>
+                
+                <div class="btn-group">
+                    <button type="button" class="btn btn-secondary" onclick="closeEditAracBilgileriModal()">İptal</button>
                     <button type="submit" class="btn btn-primary">Kaydet</button>
                 </div>
             </form>
@@ -520,7 +611,7 @@
         // Sayfa yüklendiğinde araçları getir
         document.addEventListener('DOMContentLoaded', function() {
             loadVehicles();
-            setupEditForm();
+            setupEditForms();
         });
 
         // Araçları API'den yükle
@@ -596,7 +687,7 @@
             }
         }
 
-        // Araç detayını modal içinde göster - arac.html düzeni ile
+        // Araç detayını modal içinde göster
         function displayVehicleDetail(vehicle) {
             const modalTitle = document.getElementById('modalTitle');
             const modalBody = document.getElementById('modalBody');
@@ -624,7 +715,10 @@
                             <div class="row">
                                 <div class="col-md-6">
                                     <div class="info-section">
-                                        <h4 class="mb-3">${vehicle.sirketAdi}</h4>
+                                        <h4 class="mb-3">${vehicle.sirketAdi} 
+                                            <i class="fas fa-edit text-primary ms-2" style="cursor: pointer; font-size: 0.9rem;" 
+                                               onclick="openEditAracBilgileriModal()" title="Araç Bilgilerini Düzenle"></i>
+                                        </h4>
                                         
                                         <div class="info-item">
                                             <div class="info-label">Araç Muayene</div>
@@ -634,11 +728,6 @@
                                         <div class="info-item">
                                             <div class="info-label">Kasko ve Trafik</div>
                                             <div class="info-value">${formatDate(vehicle.kaskoTrafikTarihi)}</div>
-                                        </div>
-                                        
-                                        <div class="info-item">
-                                            <div class="info-label">Araç Bakım</div>
-                                            <div class="info-value">${formatDate(vehicle.sonBakimTarihi)}</div>
                                         </div>
                                         
                                         <div class="info-item">
@@ -670,17 +759,12 @@
                                     </div>
                                     
                                     <div class="info-item">
-                                        <div class="info-label">Araç Lasik Durum</div>
+                                        <div class="info-label">Araç Lastik Durumu</div>
                                         <div class="info-value ${getStatusClass(vehicle.lastikDurumu)}">${vehicle.lastikDurumu}</div>
                                     </div>
                                 </div>
                                 
                                 <div class="col-md-6">
-                                    <div class="info-item">
-                                        <div class="info-label">Araç Lastik Durumu</div>
-                                        <div class="info-value ${getStatusClass(vehicle.lastikDurumu)}">${vehicle.lastikDurumu}</div>
-                                    </div>
-                                    
                                     <div class="info-item">
                                         <div class="info-label">Ruhsat Bilgisi</div>
                                         <div class="info-value">${vehicle.sirketAdi}</div>
@@ -697,11 +781,11 @@
                         <div class="vehicle-card-modal">
                             <h5 class="mb-3">Ruhsat Bilgileri 
                                 <i class="fas fa-edit text-primary ms-2" style="cursor: pointer; font-size: 0.9rem;" 
-                                   onclick="openEditModal()" title="Düzenle"></i>
+                                   onclick="openEditRuhsatModal()" title="Düzenle"></i>
                             </h5>
                             <div class="info-item">
                                 <div class="info-label">Plaka</div>
-                                <div class="info-value clickable" onclick="openEditModal()">${vehicle.plaka}</div>
+                                <div class="info-value">${vehicle.plaka}</div>
                             </div>
                             <div class="info-item">
                                 <div class="info-label">VIN</div>
@@ -715,7 +799,10 @@
                         
                         <!-- User Information -->
                         <div class="vehicle-card-modal">
-                            <h5 class="mb-3">Araç Kullanıcı</h5>
+                            <h5 class="mb-3">Araç Kullanıcı 
+                                <i class="fas fa-edit text-primary ms-2" style="cursor: pointer; font-size: 0.9rem;" 
+                                   onclick="openEditKullaniciModal()" title="Düzenle"></i>
+                            </h5>
                             <div class="info-item">
                                 <div class="info-value">${vehicle.kullaniciAdi}</div>
                                 <div class="info-value text-primary">${vehicle.kullaniciTelefon}</div>
@@ -741,8 +828,10 @@
             `;
         }
 
-        // Düzenleme modal'ını aç
-        function openEditModal() {
+        // Modal Fonksiyonları
+        
+        // Ruhsat düzenleme modal'ını aç
+        function openEditRuhsatModal() {
             if (!currentEditingVehicle) return;
             
             document.getElementById('editPlaka').value = currentEditingVehicle.plaka;
@@ -751,17 +840,52 @@
             document.getElementById('editModel').value = currentEditingVehicle.model;
             document.getElementById('editYil').value = currentEditingVehicle.yil;
             
-            document.getElementById('editModal').style.display = 'block';
+            document.getElementById('editRuhsatModal').style.display = 'block';
         }
 
-        // Düzenleme modal'ını kapat
-        function closeEditModal() {
-            document.getElementById('editModal').style.display = 'none';
+        function closeEditRuhsatModal() {
+            document.getElementById('editRuhsatModal').style.display = 'none';
         }
 
-        // Form gönderme işleyicisi
-        function setupEditForm() {
-            document.getElementById('editForm').addEventListener('submit', async function(e) {
+        // Kullanıcı düzenleme modal'ını aç
+        function openEditKullaniciModal() {
+            if (!currentEditingVehicle) return;
+            
+            document.getElementById('editKullaniciAdi').value = currentEditingVehicle.kullaniciAdi;
+            document.getElementById('editKullaniciTelefon').value = currentEditingVehicle.kullaniciTelefon;
+            
+            document.getElementById('editKullaniciModal').style.display = 'block';
+        }
+
+        function closeEditKullaniciModal() {
+            document.getElementById('editKullaniciModal').style.display = 'none';
+        }
+
+        // Araç bilgileri düzenleme modal'ını aç
+        function openEditAracBilgileriModal() {
+            if (!currentEditingVehicle) return;
+            
+            const muayeneDate = new Date(currentEditingVehicle.muayeneTarihi);
+            const kaskoveTrafikDate = new Date(currentEditingVehicle.kaskoTrafikTarihi);
+            const bakimDate = new Date(currentEditingVehicle.sonBakimTarihi);
+            
+            document.getElementById('editMuayeneTarihi').value = muayeneDate.toISOString().split('T')[0];
+            document.getElementById('editKaskoveTrafikTarihi').value = kaskoveTrafikDate.toISOString().split('T')[0];
+            document.getElementById('editBakimTarihi').value = bakimDate.toISOString().split('T')[0];
+            document.getElementById('editGuncelKm').value = currentEditingVehicle.guncelKm;
+            document.getElementById('editLastikDurumu').value = currentEditingVehicle.lastikDurumu;
+            
+            document.getElementById('editAracBilgileriModal').style.display = 'block';
+        }
+
+        function closeEditAracBilgileriModal() {
+            document.getElementById('editAracBilgileriModal').style.display = 'none';
+        }
+
+        // Form gönderme işleyicilerini ayarla
+        function setupEditForms() {
+            // Ruhsat formu
+            document.getElementById('editRuhsatForm').addEventListener('submit', async function(e) {
                 e.preventDefault();
                 
                 if (!currentEditingVehicle) return;
@@ -787,16 +911,9 @@
                         throw new Error(`HTTP error! status: ${response.status}`);
                     }
 
-                    const updatedVehicle = await response.json();
-                    
-                    // Başarı mesajı
                     alert('Ruhsat bilgileri başarıyla güncellendi!');
-                    
-                    // Modal'ları kapat
-                    closeEditModal();
+                    closeEditRuhsatModal();
                     closeModal();
-                    
-                    // Araç listesini yenile
                     await loadVehicles();
                     
                 } catch (error) {
@@ -804,9 +921,82 @@
                     alert('Ruhsat bilgileri güncellenirken bir hata oluştu.');
                 }
             });
+
+            // Kullanıcı formu
+            document.getElementById('editKullaniciForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                if (!currentEditingVehicle) return;
+
+                const formData = {
+                    kullaniciAdi: document.getElementById('editKullaniciAdi').value,
+                    kullaniciTelefon: document.getElementById('editKullaniciTelefon').value
+                };
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/araclar/${currentEditingVehicle.id}/kullanici`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    alert('Kullanıcı bilgileri başarıyla güncellendi!');
+                    closeEditKullaniciModal();
+                    closeModal();
+                    await loadVehicles();
+                    
+                } catch (error) {
+                    console.error('Güncelleme hatası:', error);
+                    alert('Kullanıcı bilgileri güncellenirken bir hata oluştu.');
+                }
+            });
+
+            // Araç bilgileri formu
+            document.getElementById('editAracBilgileriForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                
+                if (!currentEditingVehicle) return;
+
+                const formData = {
+                    muayeneTarihi: document.getElementById('editMuayeneTarihi').value,
+                    kaskoTarihi: document.getElementById('editKaskoveTrafikTarihi').value,
+                    sonBakimTarihi: document.getElementById('editBakimTarihi').value,
+                    guncelKm: parseInt(document.getElementById('editGuncelKm').value),
+                    lastikDurumu: document.getElementById('editLastikDurumu').value
+                };
+
+                try {
+                    const response = await fetch(`${API_BASE_URL}/araclar/${currentEditingVehicle.id}/arac-bilgileri`, {
+                        method: 'PATCH',
+                        headers: {
+                            'Content-Type': 'application/json',
+                        },
+                        body: JSON.stringify(formData)
+                    });
+
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+
+                    alert('Araç bilgileri başarıyla güncellendi!');
+                    closeEditAracBilgileriModal();
+                    closeModal();
+                    await loadVehicles();
+                    
+                } catch (error) {
+                    console.error('Güncelleme hatası:', error);
+                    alert('Araç bilgileri güncellenirken bir hata oluştu.');
+                }
+            });
         }
 
-        // Modal'ı kapat
+        // Ana modal'ı kapat
         function closeModal() {
             document.getElementById('vehicleModal').style.display = 'none';
             currentEditingVehicle = null;
@@ -815,21 +1005,33 @@
         // Modal dışına tıklandığında kapat
         window.onclick = function(event) {
             const modal = document.getElementById('vehicleModal');
-            const editModal = document.getElementById('editModal');
+            const editRuhsatModal = document.getElementById('editRuhsatModal');
+            const editKullaniciModal = document.getElementById('editKullaniciModal');
+            const editAracBilgileriModal = document.getElementById('editAracBilgileriModal');
             
             if (event.target === modal) {
                 closeModal();
             }
-            if (event.target === editModal) {
-                closeEditModal();
+            if (event.target === editRuhsatModal) {
+                closeEditRuhsatModal();
+            }
+            if (event.target === editKullaniciModal) {
+                closeEditKullaniciModal();
+            }
+            if (event.target === editAracBilgileriModal) {
+                closeEditAracBilgileriModal();
             }
         }
 
         // ESC tuşu ile modal'ları kapat
         document.addEventListener('keydown', function(event) {
             if (event.key === 'Escape') {
-                if (document.getElementById('editModal').style.display === 'block') {
-                    closeEditModal();
+                if (document.getElementById('editAracBilgileriModal').style.display === 'block') {
+                    closeEditAracBilgileriModal();
+                } else if (document.getElementById('editKullaniciModal').style.display === 'block') {
+                    closeEditKullaniciModal();
+                } else if (document.getElementById('editRuhsatModal').style.display === 'block') {
+                    closeEditRuhsatModal();
                 } else if (document.getElementById('vehicleModal').style.display === 'block') {
                     closeModal();
                 }
